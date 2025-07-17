@@ -29,7 +29,7 @@ let questions = [
     answer_2: "max",
     answer_3: "from",
     answer_4: "spellcheck",
-    right_answer: 1,
+    right_answer: 3,
   },
   {
     question: "Welches Tag braucht kein Closing Tag?",
@@ -44,6 +44,8 @@ let questions = [
 let currentQuestion = 0;
 let correctAnswers = 0;
 let percent = 0;
+let AUDIO_SUCCESS = new Audio("assets/rightAnswer.mp3");
+let AUDIO_FAIL = new Audio("assets/wrongAnswer.mp3");
 
 function init() {
   document.getElementById("current_question").innerHTML = currentQuestion + 1;
@@ -53,44 +55,63 @@ function init() {
 }
 
 function showQuestion() {
-  if (currentQuestion < questions.length) {
-    percent = currentQuestion / questions.length;
-    percent = Math.round(percent * 100);
-    document.getElementById("progress-bar").innerHTML = `${percent} %`;
-    document.getElementById("progress-bar").style.width = `${percent}%`;
-    let question = questions[currentQuestion];
-    document.getElementById("questiontext").innerHTML = question["question"];
-    document.getElementById("answer_1").innerHTML = question["answer_1"];
-    document.getElementById("answer_2").innerHTML = question["answer_2"];
-    document.getElementById("answer_3").innerHTML = question["answer_3"];
-    document.getElementById("answer_4").innerHTML = question["answer_4"];
-    document.getElementById("current_question").innerHTML = currentQuestion + 1;
+  if (gameIsNotOver()) {
+    updateProgressBar();
+    updateToNextQuestion();
   } else {
-    let percent = currentQuestion / questions.length;
-    percent = Math.round(percent * 100);
-    document.getElementById("progress-bar").innerHTML = `${percent} %`;
-    document.getElementById("progress-bar").style.width = `${percent}%`;
-    document.getElementById("background").style = "display:none";
-    document.getElementById("playing").style = "display:none";
-    document.getElementById("finish").style = "";
-    document.getElementById("right_answers").innerHTML = correctAnswers;
+    updateProgressBar();
+    showEndScreen();
   }
+}
+
+function gameIsNotOver() {
+  return currentQuestion < questions.length;
+}
+
+function updateToNextQuestion() {
+  let question = questions[currentQuestion];
+  document.getElementById("questiontext").innerHTML = question["question"];
+  document.getElementById("answer_1").innerHTML = question["answer_1"];
+  document.getElementById("answer_2").innerHTML = question["answer_2"];
+  document.getElementById("answer_3").innerHTML = question["answer_3"];
+  document.getElementById("answer_4").innerHTML = question["answer_4"];
+  document.getElementById("current_question").innerHTML = currentQuestion + 1;
+}
+
+function showEndScreen() {
+  document.getElementById("background").style = "display:none";
+  document.getElementById("playing").style = "display:none";
+  document.getElementById("finish").style = "";
+  document.getElementById("right_answers").innerHTML = correctAnswers;
+}
+
+function updateProgressBar() {
+  let percent = currentQuestion / questions.length;
+  percent = Math.round(percent * 100);
+  document.getElementById("progress-bar").innerHTML = `${percent} %`;
+  document.getElementById("progress-bar").style.width = `${percent}%`;
 }
 
 function answer(selection) {
   let question = questions[currentQuestion];
   let selectedQuestionNumber = selection.slice(-1);
   let idOfRightAnswer = `answer_${question["right_answer"]}`;
-  if (selectedQuestionNumber == question["right_answer"]) {
+  if (rightAnswerSelected(selectedQuestionNumber, question)) {
     document.getElementById(selection).parentNode.classList.add("bg-success");
+    AUDIO_SUCCESS.play();
     correctAnswers++;
   } else {
     document.getElementById(selection).parentNode.classList.add("bg-danger");
     document
       .getElementById(idOfRightAnswer)
       .parentNode.classList.add("bg-success");
+    AUDIO_FAIL.play();
   }
   document.getElementById("next-button").disabled = false;
+}
+
+function rightAnswerSelected(selectedQuestionNumber, question) {
+  return selectedQuestionNumber == question["right_answer"];
 }
 
 function nextQuestion() {
